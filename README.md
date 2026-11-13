@@ -1,107 +1,111 @@
-# ATM Error Logger & Dispatcher
+# ATM Error Logger & Dispatcher (Sentinel)
+**Scenario-Based Project: P7**  
+*Integrating Automata Theory & Computability (BCS503) with Computer Networks (BCS502)*
 
-A web application for reporting ATM incidents, routing them to support teams, and tracking resolution across four regions.
+---
 
-## Features
+## 📌 Project Overview
 
-- **Report submission** - validates ATM IDs and error codes, then detects incident category and priority.
-- **Report tracking** - search by report ID and follow status, handler, and submission details.
-- **Handler console** - manage handler availability, capacity, and report status.
-- **Routing dashboard** - view regional mappings, assignments, escalations, and queued reports.
-- **Analytics** - explore report trends by zone, category, status, and priority.
-- **SQLite storage** - reports, handler settings, and analytics use live database records.
+Sentinel is a responsive, web-based ATM Error Logger and Dispatcher application engineered to log, validate, classify, route, and track incidents across multi-regional ATM networks.
 
-## Tech stack
+The application integrates:
+- **BCS503 (Automata Theory and Computability)**: Formal Deterministic Finite Automata (DFA) state machines and equivalent regular expressions for identifier validation (`ATM[3-alpha][4-digit]`, `E[2-digit][1-alpha]`), 5-category incident classification, deterministic conflict resolution, and step-by-step state transition traces.
+- **BCS502 (Computer Networks)**: Explicit regional routing table, dynamic dispatch algorithm, handler capacity management, backup failovers, priority overrides, and a dedicated **Central Security Desk Bypass**.
 
-- Frontend: React, Vite, React Router, Axios, Recharts
-- Backend: Python, Flask, SQLite
-- Tests: Python `unittest`
+---
 
-## Run locally
+## 🚀 Key Modules & Architecture
 
-You'll need Python 3.10+ and Node.js 20+.
+### Part A & B: Automata & Network Routing Backend
+1. **Formal DFA Simulators**:
+   - `ATM_ID_DFA`: $M_{ATM} = (Q, \Sigma, \delta, q_0, \{q_{12}\})$ validating format `ATM[3-alpha][4-digit]` (e.g. `ATMNOR1001` or `ATM-NOR-1001`).
+   - `ERROR_CODE_DFA`: $M_{Error} = (S, \Sigma, \delta_E, s_0, \{s_6\})$ validating format `E[2-digit][1-alpha]` (e.g. `E01H`, `E05X`).
+   - Regex verification checking exact language equivalence and reporting step-by-step state traces.
+2. **Five Predefined Classifications**:
+   - `Hardware`
+   - `Network`
+   - `Cash-Handling`
+   - `Software`
+   - `Security`
+3. **Deterministic Conflict Priority Rule**:
+   - If conflicting patterns appear in the incident description or codes:  
+     `Security > Cash-Handling > Network > Software > Hardware`
+4. **Computer Networks Routing Table & Dispatch**:
+   - **4 Regional Support Zones**:
+     - `NOR` (or `100`): North Region -> Nora Singh (North Regional Lead)
+     - `SOU` (or `200`): South Region -> Samir Rao (South Regional Lead)
+     - `EAS` (or `300`): East Region -> Esha Das (East Regional Lead)
+     - `WES` (or `400`): West Region -> Wesley Chen (West Regional Lead)
+   - **Central Security Desk Bypass**: Security incidents bypass all regional teams and dispatch directly to the Central Security Desk with emergency escalation.
+   - **Central Fallback & Correction Queue**: Unmapped or unknown prefixes route directly to triage.
+   - **Handler Capacity & Availability**: Dynamic failover to eligible backup regional handlers if the primary handler is full or unavailable; waiting queue if network capacity is exceeded.
+   - **Statuses**: `Pending`, `Assigned`, `In Progress`, `Resolved`.
 
-### 1. Start the backend
+---
 
+### Part C: Responsive Frontend (React + Vite)
+1. **Report Submission Interface (`/submit`)**:
+   - Reporter details (name, contact).
+   - Structured identifiers (`ATM ID`, `Error Code`) with live DFA and Regex validity badges.
+   - Urgency dropdown (`Low`, `Medium`, `High`, `Critical`).
+   - Incident description with real-time classification, priority detection, and routing destination preview.
+   - Generates unique Report ID (`ATM-xxxxxxxxxx`).
+2. **User Dashboard / Report Tracking (`/my-reports`)**:
+   - Status counters (Total, Pending, Assigned, In Progress, Resolved).
+   - Search by Report ID displaying assigned handler, backup, priority, status, and escalation notes.
+3. **Handler Console (`/handlers`)**:
+   - Manage workloads and availability toggles for Regional Handlers and Central Security Desk.
+   - Advance report lifecycle status (`Pending` -> `Assigned` -> `In Progress` -> `Resolved`).
+4. **Routing Management Dashboard (`/routing`)**:
+   - Explicit prefix routing table and Central Security bypass rule display.
+   - Handler load meters vs capacity.
+   - Live dispatch decisions and queue monitors.
+5. **Analytics Dashboard (`/analytics`)**:
+   - Zone distribution chart (North, South, East, West, Central).
+   - 5-category distribution pie chart.
+   - Pipeline status bar chart.
+   - Priority breakdown.
+6. **Interactive DFA Simulator (`/dfa-simulator`)**:
+   - Test bench to execute inputs against the DFA and Regex side-by-side.
+   - Live step-by-step state transition table ($\text{Step}, \text{Char}, \text{From State} \to \text{To State}$).
+
+---
+
+### Part D: Testing & Verification
+The test suite in [test_app.py](file:///c:/Users/chand/Downloads/Quad1.1-/backend/tests/test_app.py) contains **22 automated test cases** covering all 15 required assignment scenarios:
+- Valid and invalid input formats with DFA and regex agreement.
+- All five report categories and conflicting pattern resolution.
+- Unknown routing zones, invalid codes, and fallback routing.
+- Handler availability, capacity overflow, and backup dispatch.
+- Emergency priority overrides and queue ordering.
+- Status updates, persistence, search by ID, and DFA simulation traces.
+
+---
+
+## 🛠 Local Setup & Running
+
+### Requirements
+- Python 3.10+
+- Node.js 20+
+
+### 1. Run the Flask Backend
 ```powershell
 cd backend
-python -m venv .venv
 .venv\Scripts\Activate.ps1
-pip install -r requirements.txt
 python app.py
 ```
+*API runs at `http://127.0.0.1:5000` with SQLite database `backend/atm_errors.db`.*
 
-The API runs at `http://127.0.0.1:5000`. SQLite is created at `backend/atm_errors.db` on first launch.
-
-### 2. Start the frontend
-
-In a second terminal:
-
+### 2. Run the React Frontend
+In a separate terminal:
 ```powershell
 cd frontend
-npm install
 npm run dev
 ```
+*Open `http://127.0.0.1:5173` in your browser.*
 
-Open the local URL printed by Vite, usually `http://127.0.0.1:5173`.
-
-To use a different API address, set `VITE_API_URL` before starting Vite. The default is `http://127.0.0.1:5000/api`.
-
-### Production build
-
+### 3. Run Backend Unit Tests
 ```powershell
-cd frontend
-npm run build
+cd backend
+.venv\Scripts\python.exe -m unittest discover -s tests -v
 ```
-
-## Routing and validation rules
-
-- ATM IDs use the format `ATM-<zone>-<terminal>`, for example `ATM-100-1234`.
-- Zone prefixes: `100` North, `200` South, `300` East, `400` West.
-- Error codes use 2-4 letters followed by a hyphen and 3-5 digits, for example `HW-104`.
-- Reports are assigned to an available handler with capacity. If the regional team is full, dispatch can use a backup handler; if no handler is available, the report stays queued.
-- Critical security reports trigger an escalation.
-
-## API endpoints
-
-| Method | Endpoint | Purpose |
-| --- | --- | --- |
-| `GET` | `/api/health` | Check API and database status |
-| `POST` | `/api/validate` | Preview validation, category, and priority |
-| `POST` | `/api/reports` | Validate, route, and save a report |
-| `GET` | `/api/reports` | List reports |
-| `GET` | `/api/reports/<id>` | Find a report by ID |
-| `PATCH` | `/api/reports/<id>/status` | Update a report status |
-| `GET` | `/api/handlers` | View handler workload and availability |
-| `PATCH` | `/api/handlers/<id>` | Update handler capacity or availability |
-| `GET` | `/api/routing` | View routing mappings and dispatch data |
-| `GET` | `/api/analytics` | View database-backed report summaries |
-
-## Run the tests
-
-From the `backend` directory:
-
-```powershell
-python -m unittest discover -s tests -v
-```
-
-The suite contains 25 cases covering validation, classification, dispatch, persistence, analytics, and the report workflow.
-
-## Project layout
-
-```text
-backend/
-  app.py                 Flask API and application logic
-  requirements.txt       Python dependencies
-  tests/test_app.py       Backend test suite
-frontend/
-  src/App.jsx             Dashboard pages and application views
-  src/main.jsx            React entry point
-  src/styles.css          Responsive styles
-  package.json            Frontend scripts and dependencies
-```
-
-
-
-
-
