@@ -1,0 +1,7 @@
+backend/.packages/
+backend/.venv/
+backend/__pycache__/
+backend/tests/__pycache__/
+backend/atm_errors.db
+frontend/node_modules/
+frontend/dist/
